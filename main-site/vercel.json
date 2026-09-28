@@ -6,5 +6,20 @@
     "rewrites": [{
         "source": "/",
         "destination": "/"
+    }],
+    "functions": {
+        "api/game/throw.js": {
+            "includeFiles": "js/rules.js"
+        },
+        "api/game/submit.js": {
+            "includeFiles": "js/rules.js"
+        },
+        "api/game/start.js": {
+            "includeFiles": "js/rules.js"
+        }
+    },
+    "headers": [{
+        "source": "/sw.js",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
     }]
 }

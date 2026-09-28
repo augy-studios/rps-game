@@ -1,7 +1,7 @@
 {
     "name": "Rock Paper Scissors Game by UwU Apps",
-    "short_name": "Rock Paper Scissors Game",
-    "description": "A simple rpsgame app; view live rpsgame at a glance!",
+    "short_name": "Rock Paper Scissors",
+    "description": "Rock paper scissors against the computer or a friend on the same wifi. Play best of 1, 3, 5 or any number, then watch and share the replay.",
     "icons": [{
             "src": "XRP-192.png",
             "type": "image/png",
@@ -27,8 +27,8 @@
         }
     ],
     "start_url": "/",
-    "theme_color": "#cfc",
-    "background_color": "#cfc",
+    "theme_color": "#ccffcc",
+    "background_color": "#ccffcc",
     "display": "standalone",
     "display_override": ["fullscreen", "minimal-ui", "window-controls-overlay"],
     "orientation": "any",
@@ -37,8 +37,7 @@
     "scope": "/",
     "lang": "en",
     "categories": [
-        "entertainment",
-        "lifestyle",
-        "utilities"
+        "games",
+        "entertainment"
     ]
 }

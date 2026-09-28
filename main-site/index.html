@@ -2,6 +2,32 @@
 <html lang="en">
 
 <head>
+    <meta charset="utf-8">
+    <title>Rock Paper Scissors Game | UwU Apps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="Rock paper scissors against the computer or a friend on the same wifi. Play best of 1, 3, 5 or any number, then watch and share the replay.">
+
+    <script>
+        (function () {
+            var k = "rpsgame";
+            var m = localStorage.getItem(k + ".mode") || "light";
+
+            // Time based mode. Resolved here rather than in theme.js because
+            // theme.js runs after first paint, and an evening reader would
+            // otherwise watch a white page turn dark. Keep the two hours in
+            // step with LIGHT_FROM_HOUR and LIGHT_UNTIL_HOUR in js/theme.js.
+            document.documentElement.setAttribute("data-mode-preference", m);
+            if (m === "time") {
+                var h = new Date().getHours();
+                m = h >= 9 && h < 18 ? "light" : "dark";
+            }
+
+            var c = localStorage.getItem(k + ".colorTheme") || "classic";
+            document.documentElement.setAttribute("data-mode", m);
+            document.documentElement.setAttribute("data-color-theme", c);
+        })();
+    </script>
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-FMCYFTFPEL"></script>
     <script>
@@ -18,44 +44,337 @@
         crossorigin="anonymous"></script>
 
     <link rel="manifest" href="/manifest.json" />
-
-    <meta charset="utf-8">
-    <title>Rock Paper Scissors Game | UwU Apps</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="A simple rpsgame app; view live rpsgame at a glance!">
+    <link rel="canonical" href="https://rps.uwuapps.org/" />
 
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rps.uwuapps.org/" />
     <meta property="og:title" content="Rock Paper Scissors Game | UwU Apps" />
     <meta property="og:site_name" content="UwU Apps" />
-    <meta property="og:description" content="A simple rpsgame app; view live rpsgame at a glance!" />
+    <meta property="og:description" content="Rock paper scissors against the computer or a friend on the same wifi. Play best of 1, 3, 5 or any number, then watch and share the replay." />
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Jua">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/style.css">
     <meta name="theme-color" content="#ccffcc" />
+    <meta name="application-name" content="Rock Paper Scissors" />
+    <meta name="apple-mobile-web-app-title" content="Rock Paper Scissors" />
 
     <!-- Embed Image -->
     <link rel="apple-touch-icon" href="/XRP-main.png">
     <link rel="icon" href="/favicon.ico">
     <link rel="shortcut icon" href="/favicon.ico">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image:src" content="/XRP-main.png">
-    <meta property="og:image" content="/XRP-main.png" />
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script defer="" src="https://use.fontawesome.com/releases/v6.5.2/js/all.js"></script>
+    <meta name="twitter:image:src" content="https://rps.uwuapps.org/XRP-main.png">
+    <meta property="og:image" content="https://rps.uwuapps.org/XRP-main.png" />
 </head>
 
 <body>
-    Rock Paper Scissors Game
+    <div id="app" class="page">
+        <header class="topbar glass">
+            <div class="brand">
+                <img class="brand-icon" src="/XRP-192.png" alt="" width="28" height="28">
+                <h1 class="brand-name">Rock Paper Scissors</h1>
+            </div>
+            <div class="topbar-actions">
+                <button id="boardBtn" class="icon-btn" type="button" aria-haspopup="dialog" aria-label="Leaderboard">
+                    <span data-icon="trophy"></span>
+                </button>
+                <button id="settingsBtn" class="icon-btn" type="button" aria-haspopup="dialog" aria-label="Settings">
+                    <span data-icon="settings"></span>
+                </button>
+                <button id="themeBtn" class="icon-btn" type="button" aria-haspopup="dialog" aria-label="Theme">
+                    <span data-icon="sun"></span>
+                </button>
+                <a id="coffeeBtn" class="icon-btn" href="https://donate.stripe.com/28o2akeAr3hv0DK6oo"
+                    target="_blank" rel="noopener noreferrer" aria-label="Buy Augy a Coffee">
+                    <span data-icon="coffee"></span>
+                </a>
+            </div>
+        </header>
 
-    <script src="/script.js"></script>
+        <main class="card glass game" aria-labelledby="gameTitle">
+            <h2 id="gameTitle" class="visually-hidden">Rock Paper Scissors</h2>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/sw.js');
-        }
-    </script>
-    
+            <!-- Choosing a game. -->
+            <section id="setup" class="panel setup" aria-labelledby="setupTitle">
+                <h3 id="setupTitle" class="panel-title">New game</h3>
+
+                <div class="field-group">
+                    <p class="field-label" id="modeLabel">Play</p>
+                    <div class="mode-toggle" id="modePick" role="radiogroup" aria-labelledby="modeLabel">
+                        <button class="mode-btn" type="button" role="radio" aria-checked="true" data-pick="computer"><span data-icon="cpu"></span>Computer</button>
+                        <button class="mode-btn" type="button" role="radio" aria-checked="false" data-pick="network"><span data-icon="wifi"></span>Network</button>
+                    </div>
+                    <p class="field-note" id="playNote"></p>
+                </div>
+
+                <div class="field-group">
+                    <p class="field-label" id="bestLabel">Best of</p>
+                    <div class="best-pick" id="bestPick" role="radiogroup" aria-labelledby="bestLabel">
+                        <button class="mode-btn" type="button" role="radio" aria-checked="false" data-best="1">1</button>
+                        <button class="mode-btn" type="button" role="radio" aria-checked="true" data-best="3">3</button>
+                        <button class="mode-btn" type="button" role="radio" aria-checked="false" data-best="5">5</button>
+                        <button class="mode-btn" type="button" role="radio" aria-checked="false" data-best="custom">Custom</button>
+                    </div>
+                    <div class="custom-best hidden" id="customBestRow">
+                        <label for="customBest" class="visually-hidden">Best of how many</label>
+                        <input id="customBest" class="field" type="number" min="1" max="99" step="2" inputmode="numeric"
+                            placeholder="Rounds" enterkeyhint="go">
+                        <span class="field-suffix">an odd number, 1 to 99</span>
+                    </div>
+                    <p class="field-note" id="bestNote"></p>
+                </div>
+
+                <div class="field-group">
+                    <p class="field-label" id="scoringLabel">Scoring</p>
+                    <div class="mode-toggle" id="scoringPick" role="radiogroup" aria-labelledby="scoringLabel">
+                        <button class="mode-btn" type="button" role="radio" aria-checked="true" data-scoring="board"><span data-icon="trophy"></span>Leaderboard</button>
+                        <button class="mode-btn" type="button" role="radio" aria-checked="false" data-scoring="practice"><span data-icon="undo"></span>Practice</button>
+                    </div>
+                    <p class="field-note" id="scoringNote"></p>
+                </div>
+
+                <button id="startBtn" class="btn btn-primary pill start-btn" type="button">
+                    <span data-icon="play"></span><span id="startLabel">Start game</span>
+                </button>
+
+                <form id="joinForm" class="join hidden" autocomplete="off">
+                    <p class="field-label"><label for="joinInput">Or join a game on this network</label></p>
+                    <div class="guess">
+                        <input id="joinInput" class="field code-field" type="text" placeholder="Code" maxlength="9"
+                            autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
+                        <button id="joinBtn" class="btn btn-primary" type="submit"><span data-icon="link"></span>Join</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Hosting or joining a network game, before it starts. -->
+            <section id="net" class="panel net hidden" aria-labelledby="netTitle">
+                <h3 id="netTitle" class="panel-title">Network game</h3>
+                <div id="hostView" class="host-view hidden">
+                    <p class="net-lead">On the other device, open this site and enter the code, scan it, or open the link.</p>
+                    <p class="code-big" id="hostCode" aria-label="Join code"></p>
+                    <div class="qr" id="hostQr"></div>
+                    <p class="field-note" id="hostRules"></p>
+                    <button id="copyLinkBtn" class="btn btn-quiet pill" type="button"><span data-icon="copy"></span><span id="copyLinkLabel">Copy link</span></button>
+                </div>
+                <p id="netStatus" class="net-status" role="status" aria-live="polite"></p>
+                <p class="field-note">Both devices need to be on the same wifi, or one sharing a hotspot with the other.</p>
+                <div class="round-actions">
+                    <button id="newCodeBtn" class="btn btn-quiet pill hidden" type="button"><span data-icon="refresh"></span>New code</button>
+                    <button id="netRetryBtn" class="btn btn-primary pill hidden" type="button"><span data-icon="refresh"></span>Try again</button>
+                    <button id="netCancelBtn" class="btn btn-quiet pill" type="button"><span data-icon="close"></span>Cancel</button>
+                </div>
+            </section>
+
+            <!-- The game, live and then as a replay. -->
+            <section id="play" class="panel play hidden" aria-labelledby="playTitle">
+                <h3 id="playTitle" class="visually-hidden">Game</h3>
+                <div class="game-meta">
+                    <span class="chip" id="formatChip"></span>
+                    <span class="chip" id="roundChip"></span>
+                    <span class="chip" id="scoreChip"></span>
+                </div>
+
+                <div class="scoreboard" aria-label="Rounds won">
+                    <div class="score-side">
+                        <span class="score-name" id="myName">You</span>
+                        <span class="score-num" id="myWins">0</span>
+                    </div>
+                    <span class="score-sep" aria-hidden="true">:</span>
+                    <div class="score-side">
+                        <span class="score-num" id="oppWins">0</span>
+                        <span class="score-name" id="oppName">Computer</span>
+                    </div>
+                </div>
+
+                <div class="arena">
+                    <div class="hand-slot" id="myHand" data-state="empty">
+                        <span class="hand-art" data-icon="question"></span>
+                        <span class="hand-label"></span>
+                    </div>
+                    <div class="round-mid">
+                        <span class="round-badge" id="roundBadge"></span>
+                    </div>
+                    <div class="hand-slot" id="oppHand" data-state="empty">
+                        <span class="hand-art" data-icon="question"></span>
+                        <span class="hand-label"></span>
+                    </div>
+                </div>
+                <p class="round-how" id="roundHow"></p>
+
+                <p id="status" class="status" role="status" aria-live="polite"></p>
+
+                <div class="picks" id="picks" role="group" aria-label="Your pick">
+                    <button class="pick-btn" type="button" data-pick="0" aria-pressed="false" aria-keyshortcuts="R">
+                        <span class="pick-art" data-icon="rock"></span><span>Rock</span>
+                    </button>
+                    <button class="pick-btn" type="button" data-pick="1" aria-pressed="false" aria-keyshortcuts="P">
+                        <span class="pick-art" data-icon="paper"></span><span>Paper</span>
+                    </button>
+                    <button class="pick-btn" type="button" data-pick="2" aria-pressed="false" aria-keyshortcuts="S">
+                        <span class="pick-art" data-icon="scissors"></span><span>Scissors</span>
+                    </button>
+                </div>
+
+                <div id="throwFail" class="throw-fail hidden">
+                    <button id="unscoredBtn" class="btn btn-quiet pill" type="button">Play on, not scored</button>
+                </div>
+
+                <div id="netBar" class="net-bar hidden">
+                    <span class="net-dot" id="netDot"></span><span id="netBarText"></span>
+                </div>
+
+                <div id="takeback" class="takeback hidden" role="alert">
+                    <p id="takebackText"></p>
+                    <div class="round-actions">
+                        <button id="takebackYes" class="btn btn-primary pill" type="button">Accept</button>
+                        <button id="takebackNo" class="btn btn-quiet pill" type="button">Decline</button>
+                    </div>
+                </div>
+
+                <div id="liveActions" class="game-actions">
+                    <button id="undoBtn" class="btn btn-quiet pill" type="button"><span data-icon="undo"></span><span id="undoLabel">Undo</span></button>
+                    <button id="leaveBtn" class="btn btn-quiet pill" type="button"><span data-icon="exit"></span><span id="leaveLabel">New game</span></button>
+                </div>
+                <p id="undoNote" class="field-note undo-note"></p>
+
+                <!-- The instant replay, once the game is over. -->
+                <div id="replayBar" class="replay hidden" aria-label="Replay">
+                    <div class="replay-controls">
+                        <button class="icon-btn" id="rpStart" type="button" aria-label="Back to the start"><span data-icon="skipBack"></span></button>
+                        <button class="icon-btn" id="rpBack" type="button" aria-label="Back a round"><span data-icon="stepBack"></span></button>
+                        <button class="icon-btn play-btn" id="rpPlay" type="button" aria-label="Play"><span data-icon="play"></span></button>
+                        <button class="icon-btn" id="rpForward" type="button" aria-label="Forward a round"><span data-icon="stepForward"></span></button>
+                        <button class="icon-btn" id="rpEnd" type="button" aria-label="To the end"><span data-icon="skipForward"></span></button>
+                    </div>
+                    <div class="mode-toggle speed-pick" id="rpSpeed" role="radiogroup" aria-label="Replay speed">
+                        <button class="mode-btn" type="button" role="radio" aria-checked="false" data-speed="0.5">0.5×</button>
+                        <button class="mode-btn" type="button" role="radio" aria-checked="true" data-speed="1">1×</button>
+                        <button class="mode-btn" type="button" role="radio" aria-checked="false" data-speed="2">2×</button>
+                        <button class="mode-btn" type="button" role="radio" aria-checked="false" data-speed="4">4×</button>
+                    </div>
+                    <input id="rpScrub" class="scrub" type="range" min="0" max="0" value="0" aria-label="Round">
+                    <p id="rpLabel" class="replay-label" aria-live="polite"></p>
+                    <ol id="roundList" class="round-list"></ol>
+                </div>
+
+                <section id="result" class="result hidden" aria-labelledby="resultTitle">
+                    <h3 id="resultTitle" class="result-title" tabindex="-1"></h3>
+                    <p id="resultReason" class="result-reason"></p>
+                    <p id="resultScore" class="result-score"></p>
+                    <button id="shareBtn" class="btn btn-primary pill" type="button"><span data-icon="share"></span><span id="shareLabel">Share replay</span></button>
+
+                    <form id="submitForm" class="submit" autocomplete="off">
+                        <label for="nameInput" class="submit-label">Add this game to the leaderboard</label>
+                        <div class="guess">
+                            <input id="nameInput" class="field" type="text" placeholder="Your name" maxlength="20"
+                                autocomplete="nickname" spellcheck="false" enterkeyhint="done">
+                            <button id="submitBtn" class="btn btn-primary" type="submit">Add</button>
+                        </div>
+                        <p id="submitMsg" class="submit-msg" role="status" aria-live="polite"></p>
+                        <p class="submit-note">Names are shared: anyone who picks the same one shares its entry.</p>
+                    </form>
+                    <p id="notScored" class="not-scored hidden"></p>
+                    <div id="submitted" class="submitted hidden" role="status">
+                        <span class="ok-icon" data-icon="check"></span>
+                        <p id="submittedText"></p>
+                    </div>
+
+                    <div class="round-actions">
+                        <button id="againBtn" class="btn btn-primary pill" type="button"><span data-icon="refresh"></span><span id="againLabel">Play again</span></button>
+                        <button id="newGameBtn" class="btn btn-quiet pill" type="button"><span data-icon="play"></span><span id="newGameLabel">New game</span></button>
+                        <button id="resultBoardBtn" class="btn btn-quiet pill" type="button"><span data-icon="trophy"></span>Leaderboard</button>
+                    </div>
+                </section>
+            </section>
+        </main>
+
+        <footer class="foot">
+            Made with <span class="footer-heart" data-icon="heartFilled" aria-label="love" role="img"></span> by Augy
+        </footer>
+    </div>
+
+    <!-- Leaderboard modal -->
+    <div class="modal-backdrop hidden" id="boardModal">
+        <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="boardModalTitle">
+            <div class="modal-head">
+                <h2 id="boardModalTitle">Leaderboard</h2>
+                <button class="icon-btn small" type="button" data-close-modal="boardModal" aria-label="Close">
+                    <span data-icon="close"></span>
+                </button>
+            </div>
+            <div id="boardBody" class="board-body"></div>
+            <p class="mode-note">
+                A point for every round won, in any game added, won or lost. Games against the computer and network
+                games count; practice games do not. Anyone who picks the same name shares its entry.
+            </p>
+        </div>
+    </div>
+
+    <!-- Settings modal -->
+    <div class="modal-backdrop hidden" id="settingsModal">
+        <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+            <div class="modal-head">
+                <h2 id="settingsModalTitle">Settings</h2>
+                <button class="icon-btn small" type="button" data-close-modal="settingsModal" aria-label="Close">
+                    <span data-icon="close"></span>
+                </button>
+            </div>
+
+            <p class="modal-section-label">Leaderboard name</p>
+            <p id="savedName" class="saved-name"></p>
+            <form id="nameForm" class="guess" autocomplete="off">
+                <label for="settingsName" class="visually-hidden">New leaderboard name</label>
+                <input id="settingsName" class="field" type="text" placeholder="New name" maxlength="20"
+                    autocomplete="nickname" spellcheck="false" enterkeyhint="done">
+                <button id="saveNameBtn" class="btn btn-primary" type="submit">Save</button>
+            </form>
+            <p id="nameMsg" class="mode-note" role="status" aria-live="polite"></p>
+            <button id="clearNameBtn" class="btn btn-quiet pill clear-name" type="button">Clear name</button>
+
+            <p class="modal-section-label">Games</p>
+            <button class="setting-toggle" type="button" role="switch" aria-checked="false" data-setting="auto_submit">
+                <span>Add finished games automatically</span>
+                <span class="switch-state"></span><span class="switch" aria-hidden="true"></span>
+            </button>
+            <p id="autoNote" class="mode-note">Save a name first to add games automatically.</p>
+            <button class="setting-toggle" type="button" role="switch" aria-checked="true" data-setting="auto_replay">
+                <span>Play the replay when a game ends</span>
+                <span class="switch-state"></span><span class="switch" aria-hidden="true"></span>
+            </button>
+
+            <p class="mode-note">
+                The leaderboard name is filled in whenever you add a game, so it is always the last one you
+                used. Settings are kept in this browser.
+            </p>
+        </div>
+    </div>
+
+    <!-- Theme picker modal -->
+    <div class="modal-backdrop hidden" id="themeModal">
+        <div class="modal glass" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
+            <div class="modal-head">
+                <h2 id="themeModalTitle">Theme</h2>
+                <button class="icon-btn small" type="button" data-close-modal="themeModal" aria-label="Close">
+                    <span data-icon="close"></span>
+                </button>
+            </div>
+            <p class="modal-section-label">Mode</p>
+            <div class="mode-toggle" id="modeToggle">
+                <button class="mode-btn" type="button" data-mode="light" aria-pressed="false"><span data-icon="sun"></span>Light</button>
+                <button class="mode-btn" type="button" data-mode="dark" aria-pressed="false"><span data-icon="moon"></span>Dark</button>
+                <button class="mode-btn mode-btn-wide" type="button" data-mode="time" aria-pressed="false"><span data-icon="clock"></span>Time-based</button>
+            </div>
+            <p class="mode-note" id="modeNote" hidden></p>
+            <p class="modal-section-label">Brand colour</p>
+            <div class="swatch-grid" id="swatchGrid"></div>
+        </div>
+    </div>
+
+    <script type="module" src="/js/app.js"></script>
 </body>
 
 </html>
