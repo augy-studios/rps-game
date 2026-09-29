@@ -33,7 +33,7 @@
 // 4. Nothing under /api/ is ever cached. A cached leaderboard, start ticket
 //    or throw is a wrong answer, not a stale one.
 
-const VERSION = "rpsgame-v2";
+const VERSION = "rpsgame-v3";
 
 const SHELL = `rpsgame-shell-${VERSION}`;
 
